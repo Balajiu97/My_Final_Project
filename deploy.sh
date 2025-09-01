@@ -3,22 +3,18 @@ set -e
 
 APP_NAME="ecommerce-app"
 TAG=${1:-latest}
-DOCKERHUB_USER="balajiyuva"
-REPO=$2   # dev or prod
+REPO=$2   # full repo like balajiyuva/dev or balajiyuva/prod
 
 if [ -z "$REPO" ]; then
-  echo "❌ Usage: ./deploy.sh <tag> <dev|prod>"
+  echo "❌ Usage: ./deploy.sh <tag> <repository>"
+  echo "   Example: ./deploy.sh 5 balajiyuva/dev"
   exit 1
 fi
 
-echo "🔑 Logging into DockerHub..."
-echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-
-
 echo "📦 Tagging image..."
-docker tag $APP_NAME:$TAG $DOCKERHUB_USER/$REPO:$TAG
+docker tag $APP_NAME:$TAG $REPO:$TAG
 
 echo "📤 Pushing image..."
-docker push $DOCKERHUB_USER/$REPO:$TAG
+docker push $REPO:$TAG
 
-echo "✅ Successfully pushed to $DOCKERHUB_USER/$REPO:$TAG"
+echo "✅ Successfully pushed to $REPO:$TAG"
