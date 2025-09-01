@@ -29,17 +29,20 @@ pipeline {
         stage('Deploy') {
             when { anyOf { branch 'dev'; branch 'master' } }
             steps {
-                    sh """
-                      chmod +x ./deploy.sh
-                      ./deploy.sh "${BRANCH_NAME}" "${BUILD_NUMBER}" "${DEV_REPO}" "${PROD_REPO}" "$DOCKER_USER" "$DOCKER_PASS"
-                    """
-                }
+                sh """
+                  chmod +x ./deploy.sh
+                  ./deploy.sh "${BUILD_NUMBER}" "${BRANCH_NAME == 'dev' ? DEV_REPO : PROD_REPO}"
+                """
             }
         }
-    } // ✅ closes stages block
+    } // closes stages
 
     post {
-        success { echo "✅ Build & push successful for ${env.BRANCH_NAME}" }
-        failure { echo "❌ Build failed for ${env.BRANCH_NAME}" }
-    }
-}
+        success {
+            echo "✅ Build & push successful for ${env.BRANCH_NAME}"
+        }
+        failure {
+            echo "❌ Build failed for ${env.BRANCH_NAME}"
+        }
+    } // closes post
+} // closes pipeline
