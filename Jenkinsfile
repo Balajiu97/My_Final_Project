@@ -4,30 +4,39 @@ pipeline {
     environment {
         DEV_REPO  = "balajiyuva/dev"
         PROD_REPO = "balajiyuva/prod"
-        DOCKER_CREDS = credentials('dockerhub-creds')
     }
 
     stages {
         stage('Checkout') {
-            steps { checkout scm }
+            steps {
+                checkout scm
+            }
         }
 
         stage('Build & Push') {
             steps {
-                sh """
-                  chmod +x ./build.sh
-                  ./build.sh "${BRANCH_NAME}" "${BUILD_NUMBER}" "${DOCKER_CREDS_USR}" "${DOCKER_CREDS_PSW}" "${DEV_REPO}" "${PROD_REPO}"
-                """
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                      chmod +x ./build.sh
+                      ./build.sh "${BRANCH_NAME}" "${BUILD_NUMBER}" "$DOCKER_USER" "$DOCKER_PASS" "${DEV_REPO}" "${PROD_REPO}"
+                      docker logout
+                    """
+                }
             }
         }
 
         stage('Deploy') {
             when { anyOf { branch 'dev'; branch 'master' } }
             steps {
-                sh """
-                  chmod +x ./deploy.sh
-                  ./deploy.sh "${BRANCH_NAME}" "${BUILD_NUMBER}" "${DEV_REPO}" "${PROD_REPO}"
-                """
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                      chmod +x ./deploy.sh
+                      ./deploy.sh "${BRANCH_NAME}" "${BUILD_NUMBER}" "${DEV_REPO}" "${PROD_REPO}"
+                      docker logout
+                    """
+                }
             }
         }
     }
