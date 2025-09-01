@@ -12,7 +12,8 @@ if [ -z "$REPO" ]; then
 fi
 
 echo "🔑 Logging into DockerHub..."
-docker login -u $DOCKERHUB_USER
+echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
 
 echo "📦 Tagging image..."
 docker tag $APP_NAME:$TAG $DOCKERHUB_USER/$REPO:$TAG
