@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-APP_NAME="E-Commerce-App"
+APP_NAME="ecommerce-app"
 TAG=${1:-latest}
 DOCKERHUB_USER="balajiyuva"
 REPO=$2   # dev or prod
